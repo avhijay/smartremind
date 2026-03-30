@@ -1,0 +1,27 @@
+# Maven
+target/
+*.jar
+*.war
+*.class
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Spring Boot
+*.log
+logs/
+
+# Secrets
+*.env
+.env
+application-local.yml
+application-secrets.yml
+**/src/main/resources/application-local.yml
+
+# OS
+.DS_Store
+Thumbs.db
