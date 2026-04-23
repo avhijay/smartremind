@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: auth-service
+  config:
+    import: configserver:http://localhost:8888
+
+
+
+
+
+server:
+  port: 8081
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/smartremind_auth
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
