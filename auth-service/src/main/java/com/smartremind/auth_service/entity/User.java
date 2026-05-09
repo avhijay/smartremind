@@ -13,12 +13,14 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = "password")
+@Builder
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     @Setter(AccessLevel.NONE)
+
     private Long id;
 
     @Column(name = "user_name", length = 250 , nullable = false)
@@ -33,6 +35,8 @@ public class User {
 
     @Column(name = "enabled" , nullable = false)
     private Boolean enabled;
+
+
 
 
 }
