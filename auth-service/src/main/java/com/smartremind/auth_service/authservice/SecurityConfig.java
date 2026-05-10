@@ -26,10 +26,20 @@ public class SecurityConfig {
     public SecurityFilterChain authorizationServerFilterChain(HttpSecurity httpSecurity) throws Exception{
 
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(httpSecurity);
-        httpSecurity.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                .oidc(Customizer.withDefaults());
+
+        // this chain is handling only Oauth2/OpenId endpoints
+        httpSecurity.securityMatcher("/oauth2/**", "/.well-known/**")
+
+                //Enabling OpenId
+                        .getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+                                .oidc(Customizer.withDefaults());
+
+
+
+
         httpSecurity.exceptionHandling(
-                exception-> exception.defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint("/login"),
+                exception-> exception.defaultAuthenticationEntryPointFor
+                        (new LoginUrlAuthenticationEntryPoint("/login"),
                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
         return httpSecurity.build();
 
@@ -39,7 +49,12 @@ public class SecurityConfig {
     @Order(2)
 
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.authorizeHttpRequests(auth-> auth.requestMatchers("/auth/register").permitAll().anyRequest().authenticated()).formLogin(Customizer.withDefaults());
+
+        httpSecurity.csrf(csrf-> csrf.ignoringRequestMatchers("/auth/register"))
+
+        .authorizeHttpRequests(auth-> auth.requestMatchers
+                ("/auth/register")
+                .permitAll().anyRequest().authenticated()).formLogin(Customizer.withDefaults());
         return httpSecurity.build();
     }
 
