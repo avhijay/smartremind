@@ -1,6 +1,6 @@
 package com.smartremind.auth_service.authservice;
 
-import lombok.Builder;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -28,7 +28,8 @@ public class SecurityConfig {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(httpSecurity);
         httpSecurity.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .oidc(Customizer.withDefaults());
-        httpSecurity.exceptionHandling(exception-> exception.defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint("/login"),
+        httpSecurity.exceptionHandling(
+                exception-> exception.defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint("/login"),
                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
         return httpSecurity.build();
 
@@ -37,11 +38,12 @@ public class SecurityConfig {
     @Bean
     @Order(2)
 
-    public SecurityFilterChain defaultSecurityFilterChaim(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.authorizeHttpRequests(auth-> auth.anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults());
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity httpSecurity) throws Exception{
+        httpSecurity.authorizeHttpRequests(auth-> auth.requestMatchers("/auth/register").permitAll().anyRequest().authenticated()).formLogin(Customizer.withDefaults());
         return httpSecurity.build();
     }
+
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return  new BCryptPasswordEncoder();
