@@ -7,31 +7,46 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Configuration
 public class AuthorizationServerConfig {
 
 
+
+
+
     @Bean
-    public RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder){
+    public RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder , JdbcTemplate jdbcTemplate){
+
+        JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcTemplate);
 
         RegisteredClient webClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("smartremind-web")
@@ -47,7 +62,45 @@ public class AuthorizationServerConfig {
                 .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofMinutes(15))
                         .refreshTokenTimeToLive(Duration.ofDays(7))
                         .build()).build();
-        return new InMemoryRegisteredClientRepository(webClient);
+
+
+        if (repository.findByClientId("smartremind-web")==null) {
+            repository.save(webClient);
+        }
+        return repository;
+
+    }
+
+// User details needed by downstream services
+    @Bean
+    public OAuth2TokenCustomizer<JwtEncodingContext>oAuth2TokenCustomizer(){
+
+        return context -> {
+
+            if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())){
+
+                Authentication principal = context.getPrincipal();
+
+                Collection<? extends GrantedAuthority>
+                        authorities =
+                        principal.getAuthorities();
+
+                Set<String> roles =
+                        authorities.stream()
+
+                                .map(
+                                        GrantedAuthority::getAuthority
+                                )
+
+                                .collect(Collectors.toSet());
+
+                context.getClaims().claim("roles",roles);
+
+
+            }
+
+
+        };
 
     }
 
