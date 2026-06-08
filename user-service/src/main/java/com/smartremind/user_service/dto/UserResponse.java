@@ -13,6 +13,8 @@ import java.time.Instant;
 
 public record UserResponse(
 
+@NotNull
+        Long id,
 
         @NotNull
         String userName,
