@@ -2,11 +2,13 @@ package com.smartremind.user_service.service;
 
 
 
+import com.fasterxml.classmate.types.ResolvedRecursiveType;
 import com.smartremind.user_service.dto.ExpiryDateResponse;
 import com.smartremind.user_service.dto.UserRequest;
 import com.smartremind.user_service.dto.UserResponse;
 import com.smartremind.user_service.entity.User;
 import com.smartremind.user_service.enums.SubscriptionStatus;
+import com.smartremind.user_service.exception.DuplicateException;
 import com.smartremind.user_service.projection.UserExpiryProjection;
 import com.smartremind.user_service.repository.UserRepository;
 import org.slf4j.Logger;
@@ -16,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.smartremind.common.exception.ResourceNotFoundException;
 
-import java.time.Instant;
+
 import java.util.List;
 
 @Service
@@ -33,6 +35,11 @@ public class UserService {
     public UserResponse createUser(UserRequest userRequest){
 
         log.info("Request Create user | received");
+
+        if (getUserByEmail(userRequest.email())!=null){
+
+            throw  new DuplicateException("Email id already Exist");
+        }
 
         User user = requestToUserHelper(userRequest);
 
@@ -80,10 +87,19 @@ public class UserService {
     //premium feature
     public ExpiryDateResponse getSubscriptionExpiry(Long id) {
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with  id: " + id, HttpStatus.NOT_FOUND));
-        return new ExpiryDateResponse(user.getSubscriptionExpiryDate());
+//        User user = userRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("User not found with  id: " + id, HttpStatus.NOT_FOUND));
+//        return new ExpiryDateResponse(user.getSubscriptionExpiryDate());
 
+
+
+UserExpiryProjection projection =
+        userRepository.findProjectionById(id).orElseThrow(()-> new ResourceNotFoundException("User not found with  id: " + id,HttpStatus.NOT_FOUND));
+
+
+        ExpiryDateResponse response = new ExpiryDateResponse(projection.getSubscriptionExpiryDate());
+
+        return response;
 
     }
 
@@ -123,7 +139,7 @@ public class UserService {
 
     private UserResponse userToResponseHelper(User user){
 
-        UserResponse response = new UserResponse(user.getUserName(), user.getEmail(), user.getFirstName(),
+        UserResponse response = new UserResponse( user.getId(), user.getUserName(), user.getEmail(), user.getFirstName(),
                 user.getLastName(),user.getStatus(),user.getSubscriptionExpiryDate(),user.getTimeZone(),
                 user.getLanguages(),user.isEmailNotificationEnabled(),user.isSmsNotificationEnabled(),
                 user.isPushNotificationEnabled(),user.getCreatedAt(),user.getUpdatedAt());
