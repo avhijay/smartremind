@@ -59,4 +59,23 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(InvalidPaginationException.class)
+
+    public ResponseEntity< ErrorResponse> InvalidPaginationException (InvalidPaginationException e , HttpServletRequest request){
+
+        log.info ("Invalid pagination request :{} " , e.getMessage());
+
+        ErrorResponse response = new ErrorResponse();
+        response.setError("Invalid pagination request ");
+        response.setPath(request.getRequestURI());
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setMessage("Invalid pagination request ");
+
+
+        return ResponseEntity.badRequest().body(response);
+
+
+    }
+
+
 }
