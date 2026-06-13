@@ -9,10 +9,15 @@ import com.smartremind.user_service.dto.UserResponse;
 import com.smartremind.user_service.entity.User;
 import com.smartremind.user_service.enums.SubscriptionStatus;
 import com.smartremind.user_service.exception.DuplicateException;
+import com.smartremind.user_service.exception.InvalidPaginationException;
 import com.smartremind.user_service.projection.UserExpiryProjection;
 import com.smartremind.user_service.repository.UserRepository;
+import jakarta.persistence.SecondaryTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +25,7 @@ import com.smartremind.common.exception.ResourceNotFoundException;
 
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -28,9 +34,32 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+
+    private static  final int MAX_PAGE_SIZE = 100;
+
+    private static final Set<String> ALLOWED_FIELD = Set.of(
+            "id",
+            "userName",
+            "email",
+            "createdAt",
+            "updatedAt",
+            "Status"
+
+
+    );
+
+
+
+
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
+
+
+
+
+
+
 
     public UserResponse createUser(UserRequest userRequest){
 
@@ -66,14 +95,17 @@ public class UserService {
     }
 
 
-    public List< UserResponse> getUserBySubscriptionStatus(SubscriptionStatus status) {
+    public Page< UserResponse> getUserBySubscriptionStatus(SubscriptionStatus status , Pageable pageable) {
         log.info("Request get user by Status: {} | received", status);
 
-        List<User> users = userRepository.findByStatus(status);
+        validatePageable(pageable);
+
+        Page<User> users = userRepository.findByStatus(status, pageable);
 
         log.info("Request get user by Status: {} | Completed", status);
 
-        return users.stream().map(this::userToResponseHelper).toList();
+
+     return  users.map(this::userToResponseHelper);
 
 
 
@@ -162,6 +194,30 @@ UserExpiryProjection projection =
         user.setSmsNotificationEnabled(request.smsNotificationEnabled());
         user.setPushNotificationEnabled(request.pushNotificationEnabled());
         return user;
+    }
+
+
+    private void validatePageable(Pageable pageable){
+        if (pageable.getPageNumber()<0){
+            throw  new InvalidPaginationException("Page number cannot be less than 0 ");
+        }
+
+
+        if (pageable.getPageSize()<=0 ||pageable.getPageSize()>100 ){
+
+            throw  new InvalidPaginationException("Page size cannot be between 1 and "+MAX_PAGE_SIZE);
+        }
+
+        for (Sort.Order order : pageable.getSort()){
+            String property = order.getProperty();
+
+            if (!ALLOWED_FIELD.contains(property)){
+                throw new InvalidPaginationException("Invalid sort field "+ property+" : not allowed ");
+            }
+        }
+
+
+
     }
 
 

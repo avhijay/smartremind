@@ -10,6 +10,8 @@ import com.smartremind.user_service.service.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,10 +95,11 @@ public class UserController {
     }
 
     @GetMapping("/status")
-    public ResponseEntity<List<UserResponse>>getUserByStatus(@RequestParam SubscriptionStatus status){
+    public ResponseEntity<Page<UserResponse>>getUserByStatus(@RequestParam SubscriptionStatus status , Pageable pageable){
+
         log.info("Get users by status received : user - controller");
 
-        List<UserResponse> responses = userService.getUserBySubscriptionStatus(status);
+        Page<UserResponse> responses = userService.getUserBySubscriptionStatus(status , pageable);
 
 
         return  ResponseEntity.ok(responses);
