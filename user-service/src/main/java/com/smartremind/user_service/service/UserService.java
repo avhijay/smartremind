@@ -2,7 +2,7 @@ package com.smartremind.user_service.service;
 
 
 
-import com.fasterxml.classmate.types.ResolvedRecursiveType;
+
 import com.smartremind.user_service.dto.ExpiryDateResponse;
 import com.smartremind.user_service.dto.UserRequest;
 import com.smartremind.user_service.dto.UserResponse;
@@ -12,7 +12,7 @@ import com.smartremind.user_service.exception.DuplicateException;
 import com.smartremind.user_service.exception.InvalidPaginationException;
 import com.smartremind.user_service.projection.UserExpiryProjection;
 import com.smartremind.user_service.repository.UserRepository;
-import jakarta.persistence.SecondaryTable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -43,7 +43,7 @@ public class UserService {
             "email",
             "createdAt",
             "updatedAt",
-            "Status"
+            "status"
 
 
     );
@@ -65,9 +65,17 @@ public class UserService {
 
         log.info("Request Create user | received");
 
-        if (getUserByEmail(userRequest.email())!=null){
 
-            throw  new DuplicateException("Email id already Exist");
+        if (userRepository.existsByEmail(userRequest.email())){
+
+            throw  new DuplicateException(" Email already exist in the database");
+        }
+
+
+        if (userRepository.existsByUserName(userRequest.userName())){
+
+            throw  new DuplicateException(" User name is not unique");
+
         }
 
         User user = requestToUserHelper(userRequest);
