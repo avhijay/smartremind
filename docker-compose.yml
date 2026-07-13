@@ -1,5 +1,6 @@
 services:
 
+#kafka
   kafka:
     image: apache/kafka:3.7.0
     container_name: smartremind-kafka
@@ -20,6 +21,30 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
 
+#PostgreSQL
+  postgreSQL:
+    image: postgres:16
+    container_name: smartremind-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+#Redis
+  redis:
+    image: redis:7.2
+    container_name: smartremind-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
 
 
 
@@ -30,3 +55,5 @@ services:
 
 volumes:
   kafka-data:
+  pgdata:
+  redis-data:
