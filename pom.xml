@@ -44,6 +44,7 @@
         <module>scheduler-service</module>
         <module>automation-service</module>
         <module>notification-service</module>
+        <module>payment-service</module>
     </modules>
 
 
