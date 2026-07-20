@@ -34,8 +34,8 @@ public class SubscriptionPayment {
     private String username;
 
     @Column(name = "subscription_plan" )
-    @Enumerated(EnumType.STRING)
-    private SubscriptionPlan subscriptionPlan;
+
+    private String  subscriptionPlan;
 
 
     @Column(name = "subscription_status", nullable = false)
@@ -64,8 +64,15 @@ public class SubscriptionPayment {
     @Enumerated (EnumType.STRING)
     private PaymentStatus paymentStatus;
 
+    @Column(name = "retry_count", nullable = false)
+    private Integer currentRetryCount;
+
+
     @Column(name = "provider_transaction_id" , nullable = false , length = 250)
     private String providerTransactionId;
+
+    @Column(name = "idempotency_key" , nullable = false , length = 250)
+    private String idempotencyKey;
 
 
     @Column(name = "paid_at" ,nullable = false )
