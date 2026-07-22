@@ -39,7 +39,7 @@ public class User {
 
     @Column(name = "subscription_status" , length = 50 , nullable = false)
     @Enumerated(EnumType.STRING)
-    private SubscriptionStatus status;
+    private SubscriptionStatus Subscriptionstatus;
 
 
     @Column(name = "subscription_expiry",nullable = true)

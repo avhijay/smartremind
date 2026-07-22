@@ -1,7 +1,7 @@
 package com.smartremind.payment_service.service;
 
 
-import com.smartremind.payment_service.dto.ActiveSubscriptionPlansResponse;
+import com.smartremind.payment_service.dto.ActiveSubscriptionPlansResponseDTO;
 import com.smartremind.payment_service.entity.SubscriptionPlans;
 import com.smartremind.payment_service.repository.SubscriptionPlanRepository;
 import org.slf4j.Logger;
@@ -16,18 +16,19 @@ public class SubscriptionPlansService {
     private static final Logger log = LoggerFactory.getLogger(SubscriptionPlansService.class);
     private final SubscriptionPlanRepository subscriptionPlanRepository;
 
+
     public SubscriptionPlansService(SubscriptionPlanRepository subscriptionPlanRepository){
         this.subscriptionPlanRepository = subscriptionPlanRepository;
     }
 
 
 
-    public List< ActiveSubscriptionPlansResponse> getActivePlans(){
+    public List<ActiveSubscriptionPlansResponseDTO> getActivePlans(){
 
       List< SubscriptionPlans> plans =  subscriptionPlanRepository.findByIsActiveTrue();
 
-       List< ActiveSubscriptionPlansResponse> activeSubscriptionPlansResponse = plans.stream().map(this::entityToResponseHelper).toList();
-return activeSubscriptionPlansResponse;
+       List<ActiveSubscriptionPlansResponseDTO> activeSubscriptionPlansResponseDTO = plans.stream().map(this::entityToResponseHelper).toList();
+return activeSubscriptionPlansResponseDTO;
 
     }
 
@@ -38,9 +39,32 @@ return activeSubscriptionPlansResponse;
 
 
 
-    private ActiveSubscriptionPlansResponse entityToResponseHelper(SubscriptionPlans plans){
 
-        return new ActiveSubscriptionPlansResponse
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private ActiveSubscriptionPlansResponseDTO entityToResponseHelper(SubscriptionPlans plans){
+
+        return new ActiveSubscriptionPlansResponseDTO
                 (
                         plans.getId(), plans.getSubscriptionPlan(),
                 plans.getAmount(),plans.getPlanDurationDays(),plans.getActive()
@@ -48,6 +72,9 @@ return activeSubscriptionPlansResponse;
                 );
 
     }
+
+
+
 
 
 

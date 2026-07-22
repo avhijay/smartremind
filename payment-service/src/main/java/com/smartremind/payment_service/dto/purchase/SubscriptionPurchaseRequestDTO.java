@@ -1,14 +1,14 @@
-package com.smartremind.payment_service.dto;
+package com.smartremind.payment_service.dto.purchase;
 
 import com.smartremind.payment_service.enums.PaymentMethod;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record SubscriptionPurchaseRequest(
+public record SubscriptionPurchaseRequestDTO(
         @NotBlank
         String username,
         @NotBlank
-        String subscriptionPlan,
+        Long subscriptionPlan,
         @NotBlank
         Boolean autoRenew,
         @NotBlank

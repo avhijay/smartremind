@@ -33,10 +33,10 @@ public class SubscriptionPayment {
     @Column(name = "user_name" , nullable = false , length = 250 )
     private String username;
 
-    @Column(name = "subscription_plan" )
 
-    private String  subscriptionPlan;
 
+    @Column(name = "subscription_plan_id")
+    private  Long subscriptionPlanId;
 
     @Column(name = "subscription_status", nullable = false)
     @Enumerated (EnumType.STRING)
@@ -65,27 +65,27 @@ public class SubscriptionPayment {
     private PaymentStatus paymentStatus;
 
     @Column(name = "retry_count", nullable = false)
-    private Integer currentRetryCount;
+    private Integer currentRetryCount  = 0 ;
 
 
-    @Column(name = "provider_transaction_id" , nullable = false , length = 250)
+    @Column(name = "provider_transaction_id"  , length = 250)
     private String providerTransactionId;
 
     @Column(name = "idempotency_key" , nullable = false , length = 250)
     private String idempotencyKey;
 
 
-    @Column(name = "paid_at" ,nullable = false )
+    @Column(name = "paid_at"  )
     private Instant amountPaidAt;
 
 
-    @Column(name = "activated_at" , nullable = false)
+    @Column(name = "activated_at" )
     private Instant activatedAt;
 
-    @Column(name = "expires_at" , nullable = false)
+    @Column(name = "expires_at" )
     private Instant expiresAt;
 
-    @Column(name = "cancelled_at" , nullable = true)
+    @Column(name = "cancelled_at" )
     private Instant cancelledAt;
 
     @Column(name = "created_at"  , nullable = false)

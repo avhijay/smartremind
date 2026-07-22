@@ -1,8 +1,8 @@
 package com.smartremind.payment_service.controller;
 
 
-import com.smartremind.payment_service.dto.ActiveSubscriptionPlansResponse;
-import com.smartremind.payment_service.dto.CurrentUserResponse;
+import com.smartremind.payment_service.dto.ActiveSubscriptionPlansResponseDTO;
+import com.smartremind.payment_service.dto.CurrentUserResponseDTO;
 import com.smartremind.payment_service.service.SubscriptionPaymentService;
 import com.smartremind.payment_service.service.SubscriptionPlansService;
 import org.slf4j.Logger;
@@ -33,16 +33,16 @@ public class SubscriptionPaymentController {
 
 
     @GetMapping("/current/user")
-public ResponseEntity<CurrentUserResponse>getCurrentUser(@RequestHeader("X-User-Name") String username , @RequestHeader("X-User-Roles") String role){
+public ResponseEntity<CurrentUserResponseDTO>getCurrentUser(@RequestHeader("X-User-Name") String username , @RequestHeader("X-User-Roles") String role){
 
-        CurrentUserResponse response = new CurrentUserResponse(username,role);
+        CurrentUserResponseDTO response = new CurrentUserResponseDTO(username,role);
         return  ResponseEntity.ok(response);
     }
 
 
     @GetMapping("/active/plans")
-    public ResponseEntity<List<ActiveSubscriptionPlansResponse>> getActivePlans(){
-        List<ActiveSubscriptionPlansResponse> responses = subscriptionPlansService.getActivePlans();
+    public ResponseEntity<List<ActiveSubscriptionPlansResponseDTO>> getActivePlans(){
+        List<ActiveSubscriptionPlansResponseDTO> responses = subscriptionPlansService.getActivePlans();
 
         return ResponseEntity.ok(responses);
     }

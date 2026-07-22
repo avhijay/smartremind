@@ -4,7 +4,6 @@ package com.smartremind.user_service.controller;
 import com.smartremind.user_service.dto.UserRequest;
 import com.smartremind.user_service.dto.UserResponse;
 import com.smartremind.user_service.enums.SubscriptionStatus;
-import com.smartremind.user_service.exception.DuplicateException;
 import com.smartremind.user_service.service.UserService;
 
 import jakarta.validation.Valid;
@@ -16,9 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
-
-import  com.smartremind.common.ApiResponse;
 
 @RestController
 @RequestMapping("/user")

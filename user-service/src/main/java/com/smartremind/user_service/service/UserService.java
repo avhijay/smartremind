@@ -8,7 +8,8 @@ import com.smartremind.user_service.dto.UserRequest;
 import com.smartremind.user_service.dto.UserResponse;
 import com.smartremind.user_service.entity.User;
 import com.smartremind.user_service.enums.SubscriptionStatus;
-import com.smartremind.user_service.exception.DuplicateException;
+import com.smartremind.user_service.event.SubscriptionActivationEvent;
+import com.smartremind.user_service.exception.UserDoesNotExistException;
 import com.smartremind.user_service.exception.InvalidPaginationException;
 import com.smartremind.user_service.projection.UserExpiryProjection;
 import com.smartremind.user_service.repository.UserRepository;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 import com.smartremind.common.exception.ResourceNotFoundException;
 
 
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -68,13 +68,13 @@ public class UserService {
 
         if (userRepository.existsByEmail(userRequest.email())){
 
-            throw  new DuplicateException(" Email already exist in the database");
+            throw  new UserDoesNotExistException(" Email already exist in the database");
         }
 
 
         if (userRepository.existsByUserName(userRequest.userName())){
 
-            throw  new DuplicateException(" User name is not unique");
+            throw  new UserDoesNotExistException(" User name is not unique");
 
         }
 
@@ -145,7 +145,14 @@ UserExpiryProjection projection =
 
 
     // implement after payment service
-    public void activateUserSubscription() {
+    public void activateUserSubscription(SubscriptionActivationEvent event) {
+
+        User user = userRepository.findByUserName(event.username()).orElseThrow(()->new UserDoesNotExistException("While consuming from kafka username not found"+event.username()));
+
+        user.setSubscriptionstatus( event.subscriptionStatus());
+        user.setSubscriptionExpiryDate( event.subscriptionExpiryDate());
+
+        userRepository.save(user);
 
 
     }
@@ -180,7 +187,7 @@ UserExpiryProjection projection =
     private UserResponse userToResponseHelper(User user){
 
         UserResponse response = new UserResponse( user.getId(), user.getUserName(), user.getEmail(), user.getFirstName(),
-                user.getLastName(),user.getStatus(),user.getSubscriptionExpiryDate(),user.getTimeZone(),
+                user.getLastName(),user.getSubscriptionstatus(),user.getSubscriptionExpiryDate(),user.getTimeZone(),
                 user.getLanguages(),user.isEmailNotificationEnabled(),user.isSmsNotificationEnabled(),
                 user.isPushNotificationEnabled(),user.getCreatedAt(),user.getUpdatedAt());
 
