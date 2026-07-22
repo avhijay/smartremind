@@ -1,6 +1,6 @@
 package com.smartremind.payment_service.dto;
 
-public record CurrentUserResponse(
+public record CurrentUserResponseDTO(
 
         String username,
         String role

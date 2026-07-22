@@ -20,9 +20,9 @@ public class GlobalExceptionHandler {
     private static  final Logger log = LoggerFactory.getLogger (GlobalExceptionHandler.class);
 
 
-    @ExceptionHandler(DuplicateException.class)
+    @ExceptionHandler(UserDoesNotExistException.class)
 
-    public ResponseEntity< ErrorResponse> duplicateException(DuplicateException e , HttpServletRequest request){
+    public ResponseEntity< ErrorResponse> duplicateException(UserDoesNotExistException e , HttpServletRequest request){
 
         log.info ("Duplicate value found:{} " , e.getMessage());
 

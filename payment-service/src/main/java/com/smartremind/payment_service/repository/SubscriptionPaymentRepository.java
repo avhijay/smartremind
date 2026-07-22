@@ -15,5 +15,10 @@ public interface SubscriptionPaymentRepository extends JpaRepository<Subscriptio
     Optional<SubscriptionPayment>findByProviderTransactionId(String providerTransactionId);
     Page<SubscriptionPayment>findByPaymentStatus(PaymentStatus status , Pageable pageable);
 
+    Optional<SubscriptionPayment>findByIdempotencyKey(String idempotencyKey);
+
+    boolean existsByUsername(String username);
+    boolean existByIdempotencyKey(String idempotencyKey);
+
 
 }

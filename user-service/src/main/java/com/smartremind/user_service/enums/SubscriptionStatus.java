@@ -1,6 +1,8 @@
 package com.smartremind.user_service.enums;
 
 public enum SubscriptionStatus {
-    FREE,
-    PREMIUM
+    NOT_ACTIVATED,
+    ACTIVE,
+    EXPIRED,
+    CANCELLED
 }
