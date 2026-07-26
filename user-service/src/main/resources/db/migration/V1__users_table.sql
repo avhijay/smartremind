@@ -2,7 +2,7 @@ CREATE TABLE users(
 id BIGSERIAL PRIMARY KEY,
 auth_user_name VARCHAR(250) UNIQUE NOT NULL ,
 email VARCHAR(300) UNIQUE NOT NULL,
-first_name VARCHAR(200) NOT NULL,
+first_name VARCHAR(200) ,
 last_name VARCHAR(150) ,
 subscription_status VARCHAR(50) NOT NULL DEFAULT 'FREE',
 subscription_expiry TIMESTAMP ,

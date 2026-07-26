@@ -26,6 +26,10 @@ public class User {
     @Column(name = "user_name", length = 250 , nullable = false)
     private String username;
 
+
+    @Column(name = "email" , length =  300 , nullable = false )
+    private String email;
+
     @Column(name = "password" , length = 250 , nullable = false)
     private String password;
 

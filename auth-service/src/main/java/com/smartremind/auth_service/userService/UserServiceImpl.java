@@ -1,5 +1,7 @@
 package com.smartremind.auth_service.userService;
 
+import com.smartremind.auth_service.events.UserCreationEvent;
+import com.smartremind.auth_service.producer.UserPublisher;
 import com.smartremind.common.exception.ValidationException;
 
 import com.smartremind.auth_service.dto.RegistrationRequest;
@@ -14,18 +16,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Slf4j
+
 @Service
 
 public class UserServiceImpl implements UserService {
 
-
+private  static  final Logger log =   LoggerFactory.getLogger(UserServiceImpl.class);
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private  final UserPublisher userPublisher;
 
-    public UserServiceImpl(UserRepository userRepository  , PasswordEncoder passwordEncoder ){
+    public UserServiceImpl(UserRepository userRepository  , PasswordEncoder passwordEncoder  , UserPublisher userPublisher){
         this.userRepository  = userRepository;
         this.passwordEncoder=passwordEncoder;
+        this.userPublisher = userPublisher;
     }
 
 
@@ -47,6 +51,11 @@ public class UserServiceImpl implements UserService {
                 .enabled(true).build();
         userRepository.save(user);
         log.info("User registration {} : completed",user.getId());
+
+        //publish in kafka
+        UserCreationEvent event = new UserCreationEvent(user.getUsername() , user.getEmail());
+        userPublisher.publishUser(event);
+
 
         return new UserResponse(user.getId(), user.getUsername(), user.getRole(),user.getEnabled());
 
