@@ -3,12 +3,12 @@ package com.smartremind.user_service.consumer;
 
 import com.smartremind.user_service.event.SubscriptionActivationEvent;
 
+import com.smartremind.user_service.event.UserCreationEvent;
 import com.smartremind.user_service.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 @Component
 public class SubscriptionConsumer {
@@ -27,11 +27,23 @@ public class SubscriptionConsumer {
             groupId = "user-service-group"
 
     )
-    public  void consume(SubscriptionActivationEvent event){
+    public  void activateUserSubscription(SubscriptionActivationEvent event){
 
 
     userService.activateUserSubscription(event);
 
+
+    }
+
+
+
+    @KafkaListener(
+            topics = "users-events",
+            groupId = "user-service-group"
+
+    )
+    public  void createUser(UserCreationEvent userCreationEvent){
+        userService.createUser(userCreationEvent);
 
     }
 

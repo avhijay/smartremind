@@ -9,6 +9,7 @@ import com.smartremind.user_service.dto.UserResponse;
 import com.smartremind.user_service.entity.User;
 import com.smartremind.user_service.enums.SubscriptionStatus;
 import com.smartremind.user_service.event.SubscriptionActivationEvent;
+import com.smartremind.user_service.event.UserCreationEvent;
 import com.smartremind.user_service.exception.UserDoesNotExistException;
 import com.smartremind.user_service.exception.InvalidPaginationException;
 import com.smartremind.user_service.projection.UserExpiryProjection;
@@ -61,30 +62,44 @@ public class UserService {
 
 
 
-    public UserResponse createUser(UserRequest userRequest){
+    public UserResponse updateUser(UserRequest userRequest){
 
         log.info("Request Create user | received");
 
 
-        if (userRepository.existsByEmail(userRequest.email())){
+        if (!userRepository.existsByEmail(userRequest.email())){
 
-            throw  new UserDoesNotExistException(" Email already exist in the database");
+            throw  new UserDoesNotExistException("User not found by the given email address"+userRequest.email());
         }
 
 
-        if (userRepository.existsByUserName(userRequest.userName())){
+        if (!userRepository.existsByUserName(userRequest.userName())){
 
-            throw  new UserDoesNotExistException(" User name is not unique");
+            throw  new UserDoesNotExistException(" User name not found :"+userRequest.userName());
 
         }
 
         User user = requestToUserHelper(userRequest);
 
         userRepository.save(user);
-        log.info("Request Create user | completed: {} ", user.getId());
+        log.info("Request update user | completed: {} ", user.getId());
 
         return userToResponseHelper(user);
 
+
+    }
+
+
+    // initial user creation always happen in auth service , user-service consumes the event through kafka
+    //update user has to be fetched by client to proceed to fill user information
+
+    public void createUser(UserCreationEvent event){
+
+        User user = User.builder()
+                .userName(event.username())
+                .email(event.email()).build();
+
+        userRepository.save(user);
 
     }
 
