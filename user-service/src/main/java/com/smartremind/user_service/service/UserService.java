@@ -64,7 +64,7 @@ public class UserService {
 
     public UserResponse updateUser(UserRequest userRequest){
 
-        log.info("Request Create user | received");
+        log.info("Request update user | received");
 
 
         if (!userRepository.existsByEmail(userRequest.email())){

@@ -85,27 +85,45 @@ public class SubscriptionPaymentService {
 
         //check if plan already exist by the username
 
+        log.info("Request create payment : Received  | Process payment : Pending  ");
+
+
         if (subscriptionPaymentRepository.existsByUsername(request.username()) ){
+
+            log.debug("Getting payment if Exist by username :{}" , request.username());
+
             SubscriptionPayment payment = subscriptionPaymentRepository.findByUsername(request.username())
                     .orElseThrow(()-> new PaymentDoesNotExistException("Payment does not exist for the username "+request.username()));
 
 
+
+
             // throw exception if payment exist for the username with a success payment
             if (payment.getSubscriptionStatus() == SubscriptionStatus.ACTIVE ) {
+                log.debug("Checking if Payment Subscription is active");
 
                 throw new SubscriptionAlreadyExistException("User cannot buy 2 quantity of the same subscription plan  ");
             }
 
             if (payment.getSubscriptionStatus() == SubscriptionStatus.NOT_ACTIVATED){
+
+                log.info("Payment confirmed but Subscription Status : {}", SubscriptionStatus.NOT_ACTIVATED);
+
                 throw new SubscriptionAlreadyExistException("Subscription plan exist and current status of plan :"+SubscriptionStatus.NOT_ACTIVATED);
             }
 
+
+
         }
 // idempotency key check
-       else if (subscriptionPaymentRepository.existByIdempotencyKey(idempotencyKey)){
+
+        log.info("Payment check for if exist by Idempotency key : {}" , idempotencyKey );
+
+        if (subscriptionPaymentRepository.existByIdempotencyKey(idempotencyKey)){
            SubscriptionPayment payment =  subscriptionPaymentRepository.findByIdempotencyKey(idempotencyKey)
                    .orElseThrow(()->new PaymentDoesNotExistException("PAYMENT DOES NOT EXIST"));
 
+        log.info("Duplicate payment found  | idempotency key : {} " , idempotencyKey);
 
            throw  new DuplicatePaymentException("PAYMENT ALREADY EXIST CURRENT STATUS "+ payment.getPaymentStatus());
 
@@ -115,10 +133,15 @@ public class SubscriptionPaymentService {
        //create payment but don't process
 
            // get the sub plan selected by the client
+
+        log.debug("Getting Subscription plan details  for the plan : {}", request.subscriptionPlan());
+
         SubscriptionPlans plan = subscriptionPlanRepository.findById(request.subscriptionPlan())
                 .orElseThrow(()->new SubscriptionPlanNotFoundException("No subscription exist with the provided  id "));
 
         // generate payment id
+        log.info("Generating PaymentId ");
+
         String paymentId  =  PAYMENT_ID +UUID.randomUUID();
 
            SubscriptionPayment payment = SubscriptionPayment.builder()
@@ -135,6 +158,8 @@ public class SubscriptionPaymentService {
                    .build();
                     subscriptionPaymentRepository.save(payment);
 
+                    log.info("Payment creation : Success | Payment processing : Pending ");
+log.debug("Requesting Payment Processing for payment : {}" , paymentId);
      return processPayment(payment);
 
 
@@ -147,11 +172,18 @@ public class SubscriptionPaymentService {
 
 @Transactional
 public SubscriptionPurchaseResponseDTO processPayment (SubscriptionPayment payment) {
+
+        log.info("Request Process payment : Received  for payment : {}" , payment.getPaymentId());
+
         PaymentProviderRequestDTO paymentRequest  = paymentToProviderRequestHelper(payment);
 
         // sending request dto to payment provider
+    log.debug(" Payment Provider : Pending ");
       PaymentProviderResponseDTO   paymentResponse =  paymentProvider.processCompletedPayment(paymentRequest);
+      log.info("Payment provider Response : Responded ");
 
+
+      log.debug("Getting Subscription Plan : {}" , payment.getSubscriptionPlanId());
     SubscriptionPlans plan = subscriptionPlanRepository.
             findById(payment.getSubscriptionPlanId()).
             orElseThrow(()->new SubscriptionPlanNotFoundException("Subscription plan not found with id : "+payment.getSubscriptionPlanId()));
@@ -161,7 +193,7 @@ public SubscriptionPurchaseResponseDTO processPayment (SubscriptionPayment payme
 
     //if success
     if (paymentResponse.status()==PaymentStatus.SUCCESS  && Objects.equals(payment.getPaymentId(), paymentResponse.paymentId())){
-
+log.info("Payment Provider  : Payment Success");
 
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
         payment.setProviderTransactionId(paymentResponse.providerTransactionId());
@@ -171,15 +203,23 @@ public SubscriptionPurchaseResponseDTO processPayment (SubscriptionPayment payme
         payment.setAmountPaidAt(Instant.now());
         payment.setActivatedAt(Instant.now());
         payment.setExpiresAt(Instant.now().plus(plan.getPlanDurationDays(), ChronoUnit.DAYS));
+        log.info(" Successful Payment :  save to database | Pending " );
+
         subscriptionPaymentRepository.save(payment);
 
+        log.info("Payment : {}   save to database | Success" , payment.getPaymentId());
+
         // create Kafka event
+
+        log.info("Creating Kafka event | Pending ");
 
         SubscriptionActivationEvent event = new SubscriptionActivationEvent(payment.getUsername()
                 ,payment.getSubscriptionStatus(),payment.getExpiresAt());
 
 
         // publish in kafka
+
+        log.info("Request publish to Kafka | Pending ");
        publisher.publishSubscriptionEvent(event);
 
 

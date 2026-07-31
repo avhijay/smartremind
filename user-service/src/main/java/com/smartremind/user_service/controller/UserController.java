@@ -38,7 +38,7 @@ public class UserController {
         log.info("Create user received : user- controller");
 
 
-        UserResponse response = userService.UpdateUser(request);
+        UserResponse response = userService.updateUser(request);
 
         URI location = URI.create("/user"+response.id());
 
