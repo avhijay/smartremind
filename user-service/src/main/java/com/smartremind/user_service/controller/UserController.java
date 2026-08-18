@@ -64,8 +64,8 @@ public class UserController {
 
 
 
-    @GetMapping
-    public ResponseEntity<UserResponse> getUserByEmail(@RequestParam String email){
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserResponse> getUserByEmail(@PathVariable String email){
 
         log.info("Get user by email received : user - controller");
 
@@ -79,8 +79,8 @@ public class UserController {
 
 
 
-    @GetMapping
-    public ResponseEntity<UserResponse>getUserByName(@RequestParam String name){
+    @GetMapping("/username/{username}")
+    public ResponseEntity<UserResponse>getUserByName(@PathVariable String name){
 
         log.info("Get user by name received : user - controller");
 

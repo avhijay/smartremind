@@ -31,18 +31,18 @@ public class User {
     @Column(name = "email" , length = 300 , nullable = false , unique = true)
  private    String email;
 
-    @Column(name = "first_name",length = 200 , nullable = false)
+    @Column(name = "first_name",length = 200 )
    private  String firstName;
 
-    @Column(name = "last_name", length = 150, nullable = true)
+    @Column(name = "last_name", length = 150)
    private  String lastName;
 
     @Column(name = "subscription_status" , length = 50 , nullable = false)
     @Enumerated(EnumType.STRING)
-    private SubscriptionStatus Subscriptionstatus;
+    private SubscriptionStatus subscriptionstatus;
 
 
-    @Column(name = "subscription_expiry",nullable = true)
+    @Column(name = "subscription_expiry")
     private Instant subscriptionExpiryDate;
 
     @Column(name = "time_zone", length = 50)

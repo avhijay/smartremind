@@ -47,6 +47,7 @@ private  static  final Logger log =   LoggerFactory.getLogger(UserServiceImpl.cl
         User user = User.builder()
                 .role(Role.ROLE_USER)
                 .username(request.username())
+                .email(request.email())
                 .password(passwordEncoder.encode(  request.password()))
                 .enabled(true).build();
         userRepository.save(user);

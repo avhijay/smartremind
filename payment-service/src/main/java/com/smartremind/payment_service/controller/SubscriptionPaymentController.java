@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -57,7 +58,9 @@ public ResponseEntity<CurrentUserResponseDTO>getCurrentUser(@RequestHeader("X-Us
 
         SubscriptionPurchaseResponseDTO responseDTO = subscriptionPaymentService.createPayment(subscriptionPurchaseRequestDTO , idempotencyKey);
 
-        return ResponseEntity.ok(responseDTO);
+        URI location = URI.create("/subscription"+responseDTO.paymentId());
+
+        return ResponseEntity.created(location).body(responseDTO);
 
 
     }

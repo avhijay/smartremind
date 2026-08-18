@@ -9,7 +9,11 @@ public record RegistrationRequest(
 @NotBlank(message = "username required ")
         String username,
         @NotBlank(message = "password cannot be empty")
-        String password
+        String password,
+
+         @NotBlank(message = "Email can't be empty ")
+         String email
+
 
 
 

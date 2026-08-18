@@ -22,19 +22,19 @@ services:
       - kafka-data:/var/lib/kafka/data
 
 #PostgreSQL
-  postgreSQL:
-    image: postgres:16
-    container_name: smartremind-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
-
-
-    ports:
-      - "5432:5432"
-
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+#  postgreSQL:
+#    image: postgres:16
+#    container_name: smartremind-postgres
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: root
+#
+#
+#    ports:
+#      - "5432:5432"
+#
+#    volumes:
+#      - pgdata:/var/lib/postgresql/data
 
 #Redis
   redis:
@@ -55,5 +55,5 @@ services:
 
 volumes:
   kafka-data:
-  pgdata:
+#  pgdata:
   redis-data:

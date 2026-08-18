@@ -22,7 +22,10 @@ public class UserPublisher {
     }
 
     public  void  publishUser (UserCreationEvent event){
+        log.debug("Publishing Event: {} | Pending  " , event.username() );
         kafkaTemplate.send(USER_TOPIC ,event.username() ,event);
+
+        log.info("Publishing Event: {} | Success  " , event.username() );
 
     }
 

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Page<User> findByStatus(SubscriptionStatus status , Pageable pageable);
+    Page<User> findBySubscriptionstatus(SubscriptionStatus status , Pageable pageable);
 
     Optional<UserExpiryProjection>findProjectionById(Long id);
 
