@@ -11,12 +11,12 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SubscriptionConsumer {
-    private static final Logger log = LoggerFactory.getLogger(SubscriptionConsumer.class);
+public class UserConsumer {
+    private static final Logger log = LoggerFactory.getLogger(UserConsumer.class);
 
     private final UserService userService;
 
-    public SubscriptionConsumer(UserService userService){
+    public UserConsumer(UserService userService){
         this.userService = userService;
     }
 
@@ -42,7 +42,9 @@ public class SubscriptionConsumer {
             groupId = "user-service-group"
 
     )
+    //UserCreationEvent userCreationEvent usage of dto specified event
     public  void createUser(UserCreationEvent userCreationEvent){
+        log.debug("User Creation Event : {}  received " ,userCreationEvent.username());
         userService.createUser(userCreationEvent);
 
     }

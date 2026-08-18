@@ -61,7 +61,7 @@ public class UserService {
 
 
 
-
+// CLIENT SENDS REQUEST TO UPDATE USER AFTER USER CREATION HAPPENS WITH MINIMAL FIELDS BY KAFKA BY AUTH AS A PRODUCER
     public UserResponse updateUser(UserRequest userRequest){
 
         log.info("Request update user | received");
@@ -93,15 +93,23 @@ public class UserService {
     // initial user creation always happen in auth service , user-service consumes the event through kafka
     //update user has to be fetched by client to proceed to fill user information
 
+
+
     public void createUser(UserCreationEvent event){
+log.info("Request create User | Received ");
 
         User user = User.builder()
                 .userName(event.username())
-                .email(event.email()).build();
+                .email(event.email())
+                .subscriptionstatus(SubscriptionStatus.FREE)
+                .build();
 
         userRepository.save(user);
+        log.info("Request Create User : Success");
 
     }
+
+
 
     public UserResponse getUserById(Long id) {
         log.info("Request get user by Id: {} | received", id);
@@ -123,7 +131,7 @@ public class UserService {
 
         validatePageable(pageable);
 
-        Page<User> users = userRepository.findByStatus(status, pageable);
+        Page<User> users = userRepository.findBySubscriptionstatus(status, pageable);
 
         log.info("Request get user by Status: {} | Completed", status);
 

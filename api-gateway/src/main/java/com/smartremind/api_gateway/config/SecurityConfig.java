@@ -19,6 +19,7 @@ public class SecurityConfig {
 
         security.csrf(csrf->csrf.disable()).
                 authorizeExchange(paths-> paths.pathMatchers("/auth/**","/oauth2/**","/.well-known/**")
+
                         .permitAll().anyExchange().authenticated())
                 
                 .oauth2ResourceServer(oauth2 ->oauth2.jwt(Customizer.withDefaults()));
