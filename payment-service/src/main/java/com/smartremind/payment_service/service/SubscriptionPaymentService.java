@@ -50,8 +50,18 @@ private boolean retryPayment(String paymentId){
                 ,subscriptionPayment.getSubscriptionStatus(),subscriptionPayment.getPaymentStatus(), subscriptionPayment.getExpiresAt());
 
     }
-
-
+import com.smartremind.payment_service.dto.SubscriptionPurchaseRequest;
+import com.smartremind.payment_service.dto.SubscriptionPurchaseResponse;
+    private static  final int maxRetryAllowed = 3;
+    private final SubscriptionPaymentService paymentService ;
+    public  SubscriptionPaymentService(SubscriptionPaymentService paymentService){
+        this.paymentService = paymentService;
+private boolean retryPayment(String paymentId){
+        int retryAllowed = maxRetryAllowed;
+}
+    private SubscriptionPurchaseResponse purchaseToResponseHelper(SubscriptionPayment subscriptionPayment){
+        return new SubscriptionPurchaseResponse(subscriptionPayment.getPaymentId(),
+                subscriptionPayment.getSubscriptionPlan(),subscriptionPayment.getAutoRenew()
 
 
 }
