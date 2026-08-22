@@ -8,8 +8,9 @@ public record SubscriptionActivationEvent(
 
   String username ,
   SubscriptionStatus subscriptionStatus ,
-  Instant subscriptionExpiryDate
-
+  Instant subscriptionExpiryDate,
+ String uniqueId ,
+  Long subscriptionPlanId
 
 
 
