@@ -1,18 +1,21 @@
+
 package com.smartremind.payment_service.controller;
 
 
-import com.smartremind.payment_service.dto.ActiveSubscriptionPlansResponse;
-import com.smartremind.payment_service.dto.CurrentUserResponse;
+import com.smartremind.payment_service.dto.ActiveSubscriptionPlansResponseDTO;
+import com.smartremind.payment_service.dto.CurrentUserResponseDTO;
+import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseRequestDTO;
+import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseResponseDTO;
 import com.smartremind.payment_service.service.SubscriptionPaymentService;
 import com.smartremind.payment_service.service.SubscriptionPlansService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -33,18 +36,34 @@ public class SubscriptionPaymentController {
 
 
     @GetMapping("/current/user")
-public ResponseEntity<CurrentUserResponse>getCurrentUser(@RequestHeader("X-User-Name") String username , @RequestHeader("X-User-Roles") String role){
+    public ResponseEntity<CurrentUserResponseDTO>getCurrentUser(@RequestHeader("X-User-Name") String username , @RequestHeader("X-User-Roles") String role){
 
-        CurrentUserResponse response = new CurrentUserResponse(username,role);
+        log.info("Request get current User : Received ");
+
+        CurrentUserResponseDTO response = new CurrentUserResponseDTO(username,role);
         return  ResponseEntity.ok(response);
     }
 
 
     @GetMapping("/active/plans")
-    public ResponseEntity<List<ActiveSubscriptionPlansResponse>> getActivePlans(){
-        List<ActiveSubscriptionPlansResponse> responses = subscriptionPlansService.getActivePlans();
+    public ResponseEntity<List<ActiveSubscriptionPlansResponseDTO>> getActivePlans(){
+        List<ActiveSubscriptionPlansResponseDTO> responses = subscriptionPlansService.getActivePlans();
 
         return ResponseEntity.ok(responses);
+    }
+
+
+    @PostMapping("{idempotencyKey}")
+    public ResponseEntity<SubscriptionPurchaseResponseDTO>requestPayment
+            (@Valid @RequestBody SubscriptionPurchaseRequestDTO subscriptionPurchaseRequestDTO , @RequestParam String idempotencyKey ){
+
+        SubscriptionPurchaseResponseDTO responseDTO = subscriptionPaymentService.createPayment(subscriptionPurchaseRequestDTO , idempotencyKey);
+
+        URI location = URI.create("/subscription"+responseDTO.paymentId());
+
+        return ResponseEntity.created(location).body(responseDTO);
+
+
     }
 
 }

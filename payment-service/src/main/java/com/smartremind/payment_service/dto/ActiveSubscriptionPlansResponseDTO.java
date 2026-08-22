@@ -1,9 +1,8 @@
 package com.smartremind.payment_service.dto;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
-public record ActiveSubscriptionPlansResponse(
+public record ActiveSubscriptionPlansResponseDTO(
  Long id,
  String subscriptionPlan,
  BigDecimal amount,

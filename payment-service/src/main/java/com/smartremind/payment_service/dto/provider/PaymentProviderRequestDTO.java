@@ -1,12 +1,11 @@
-package com.smartremind.payment_service.dto;
+package com.smartremind.payment_service.dto.provider;
 
 import com.smartremind.payment_service.enums.Currency;
 import com.smartremind.payment_service.enums.PaymentMethod;
-import com.smartremind.payment_service.enums.PaymentStatus;
 
 import java.math.BigDecimal;
 
-public record PaymentProviderRequest(
+public record PaymentProviderRequestDTO(
 
         String paymentId ,
         BigDecimal amount ,

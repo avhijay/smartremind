@@ -35,7 +35,7 @@ public class SubscriptionPayment {
 
     @Column(name = "subscription_plan" )
 
-    private String  subscriptionPlan;
+    private Long  subscriptionPlanId;
 
 
     @Column(name = "subscription_status", nullable = false)

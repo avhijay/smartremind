@@ -1,8 +1,8 @@
-package com.smartremind.payment_service.dto;
+package com.smartremind.payment_service.dto.provider;
 
 import com.smartremind.payment_service.enums.PaymentStatus;
 
-public record PaymentProviderResponse(
+public record PaymentProviderResponseDTO(
         String providerTransactionId,
         String paymentId,
         PaymentStatus status

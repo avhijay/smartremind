@@ -1,4 +1,4 @@
-package com.smartremind.payment_service.dto;
+package com.smartremind.payment_service.dto.purchase;
 
 import com.smartremind.payment_service.enums.PaymentStatus;
 
@@ -6,10 +6,10 @@ import com.smartremind.payment_service.enums.SubscriptionStatus;
 
 import java.time.Instant;
 
-public record SubscriptionPurchaseResponse(
+public record SubscriptionPurchaseResponseDTO(
 
         String paymentId,
-        String subscriptionPlan,
+        Long subscriptionPlan,
         Boolean autoRenew,
         SubscriptionStatus status,
         PaymentStatus paymentStatus ,
