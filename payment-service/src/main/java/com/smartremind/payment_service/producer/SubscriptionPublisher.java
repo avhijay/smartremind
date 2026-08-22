@@ -5,7 +5,10 @@ import com.smartremind.payment_service.events.SubscriptionActivationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class SubscriptionPublisher {
@@ -24,14 +27,19 @@ public class SubscriptionPublisher {
     }
 
 
-public void publishSubscriptionEvent( SubscriptionActivationEvent event ){
+    public CompletableFuture<SendResult<String, SubscriptionActivationEvent>> publishSubscriptionEvent(SubscriptionActivationEvent event ){
 
         log.info("Request Publish to Kafka : Received ");
 
-        kafkaTemplate.send(SUBSCRIPTION_TOPIC,event.username(),event);
+        return kafkaTemplate.send(SUBSCRIPTION_TOPIC,event.username(),event);
 
-        log.info("Request Publish to Kafka : Success ");
-}
+
+
+
+
+    }
+
+
 
 
 

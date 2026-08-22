@@ -6,6 +6,7 @@ import com.smartremind.payment_service.dto.provider.PaymentProviderRequestDTO;
 import com.smartremind.payment_service.dto.provider.PaymentProviderResponseDTO;
 import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseRequestDTO;
 import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseResponseDTO;
+import com.smartremind.payment_service.entity.OutboxData;
 import com.smartremind.payment_service.entity.SubscriptionPayment;
 import com.smartremind.payment_service.entity.SubscriptionPlans;
 import com.smartremind.payment_service.enums.Currency;
@@ -19,6 +20,7 @@ import com.smartremind.payment_service.exception.SubscriptionAlreadyExistExcepti
 import com.smartremind.payment_service.exception.SubscriptionPlanNotFoundException;
 import com.smartremind.payment_service.payment_provider.PaymentProvider;
 import com.smartremind.payment_service.producer.SubscriptionPublisher;
+import com.smartremind.payment_service.repository.OutBoxDataRepository;
 import com.smartremind.payment_service.repository.SubscriptionPaymentRepository;
 import com.smartremind.payment_service.repository.SubscriptionPlanRepository;
 
@@ -52,6 +54,7 @@ public class SubscriptionPaymentService {
     private final SubscriptionPaymentRepository subscriptionPaymentRepository;
     private final SubscriptionPlanRepository  subscriptionPlanRepository;
     private final PaymentProvider paymentProvider;
+    private final OutBoxDataRepository outBoxDataRepository;
 
     // assign region currency
     private final Currency currency;
@@ -63,7 +66,7 @@ public class SubscriptionPaymentService {
     public  SubscriptionPaymentService(SubscriptionPaymentRepository subscriptionPaymentRepository , SubscriptionPlanRepository subscriptionPlanRepository ,
                                        @Value("${payment.retry.max-attempt}")  int maxRetryAllowed , PaymentProvider paymentProvider ,
                                        @Value("${payment.region.local-currency}") Currency currency ,
-                                       SubscriptionPublisher publisher
+                                       SubscriptionPublisher publisher , OutBoxDataRepository outBoxDataRepository
 
     ){
 
@@ -73,6 +76,7 @@ public class SubscriptionPaymentService {
         this.paymentProvider = paymentProvider;
         this.currency=currency;
         this.publisher = publisher;
+        this.outBoxDataRepository=outBoxDataRepository;
 
 
     }
@@ -209,18 +213,16 @@ log.info("Payment Provider  : Payment Success");
 
         log.info("Payment : {}   save to database | Success" , payment.getPaymentId());
 
-        // create Kafka event
-
-        log.info("Creating Kafka event | Pending ");
-
-        SubscriptionActivationEvent event = new SubscriptionActivationEvent(payment.getUsername()
-                ,payment.getSubscriptionStatus(),payment.getExpiresAt());
+        // Publish Event  on Outbox
 
 
-        // publish in kafka
+        // save to outbox
+        log.info("Publishing Payment  to Outbox  ");
 
-        log.info("Request publish to Kafka | Pending ");
-       publisher.publishSubscriptionEvent(event);
+        OutboxData data = paymentToOutbox(payment);
+        outBoxDataRepository.save(data);
+
+
 
 
 
@@ -297,6 +299,24 @@ private PaymentProviderRequestDTO paymentToProviderRequestHelper(SubscriptionPay
 
 }
 
+
+
+    private OutboxData paymentToOutbox(SubscriptionPayment payment){
+
+        String id = "Unique"+UUID.randomUUID();
+
+        OutboxData data = OutboxData.builder()
+                .userName(payment.getUsername())
+                .expiresAt(payment.getExpiresAt())
+                .subscriptionStatus(payment.getSubscriptionStatus())
+                .uniqueId(id)
+                .subscriptionId(payment.getSubscriptionPlanId())
+                .published(false)
+                .build();
+        return data;
+
+
+    }
 
 
 
