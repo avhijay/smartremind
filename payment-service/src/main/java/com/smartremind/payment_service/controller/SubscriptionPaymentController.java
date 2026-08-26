@@ -3,14 +3,15 @@ package com.smartremind.payment_service.controller;
 
 import com.smartremind.payment_service.dto.ActiveSubscriptionPlansResponseDTO;
 import com.smartremind.payment_service.dto.CurrentUserResponseDTO;
+import com.smartremind.payment_service.dto.purchase.PaymentCreationResponseDTO;
 import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseRequestDTO;
 import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseResponseDTO;
-import com.smartremind.payment_service.service.SubscriptionPaymentService;
+import com.smartremind.payment_service.service.PaymentCreationService;
+import com.smartremind.payment_service.service.PaymentProcessingService;
 import com.smartremind.payment_service.service.SubscriptionPlansService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +24,11 @@ public class SubscriptionPaymentController {
 
 
     private static final Logger log = LoggerFactory.getLogger(SubscriptionPaymentController.class);
-    private final SubscriptionPaymentService subscriptionPaymentService;
+    private final PaymentCreationService paymentCreationService;
     private final SubscriptionPlansService subscriptionPlansService;
 
-    public SubscriptionPaymentController(SubscriptionPaymentService subscriptionPaymentService , SubscriptionPlansService subscriptionPlansService){
-        this.subscriptionPaymentService = subscriptionPaymentService;
+    public SubscriptionPaymentController(PaymentCreationService paymentCreationService, SubscriptionPlansService subscriptionPlansService){
+        this.paymentCreationService = paymentCreationService;
         this.subscriptionPlansService =subscriptionPlansService;
 
 
@@ -53,14 +54,14 @@ public ResponseEntity<CurrentUserResponseDTO>getCurrentUser(@RequestHeader("X-Us
 
 
     @PostMapping("{idempotencyKey}")
-    public ResponseEntity<SubscriptionPurchaseResponseDTO>requestPayment
+    public ResponseEntity<PaymentCreationResponseDTO>requestPayment
             (@Valid @RequestBody SubscriptionPurchaseRequestDTO subscriptionPurchaseRequestDTO , @RequestParam String idempotencyKey ){
 
-        SubscriptionPurchaseResponseDTO responseDTO = subscriptionPaymentService.createPayment(subscriptionPurchaseRequestDTO , idempotencyKey);
+       PaymentCreationResponseDTO payment = paymentCreationService.createPayment (subscriptionPurchaseRequestDTO , idempotencyKey);
 
-        URI location = URI.create("/subscription"+responseDTO.paymentId());
+        URI location = URI.create("/subscription"+payment.paymentId());
 
-        return ResponseEntity.created(location).body(responseDTO);
+        return ResponseEntity.created(location).body(payment);
 
 
     }

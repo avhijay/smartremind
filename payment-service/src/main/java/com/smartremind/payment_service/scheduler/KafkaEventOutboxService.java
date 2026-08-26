@@ -1,7 +1,7 @@
-package com.smartremind.payment_service.service;
+package com.smartremind.payment_service.scheduler;
 
 
-import com.smartremind.payment_service.entity.OutboxData;
+import com.smartremind.payment_service.entity.KafkaOutboxData;
 import com.smartremind.payment_service.events.SubscriptionActivationEvent;
 import com.smartremind.payment_service.producer.SubscriptionPublisher;
 import com.smartremind.payment_service.repository.OutBoxDataRepository;
@@ -16,20 +16,20 @@ import java.util.List;
 
 @Component
 @EnableScheduling
-public class OutboxDataService {
+public class KafkaEventOutboxService {
 
     private final OutBoxDataRepository outboxDataRepository;
 
     private final SubscriptionPublisher publisher;
 
-    public OutboxDataService(OutBoxDataRepository outboxDataRepository , SubscriptionPublisher publisher){
+    public KafkaEventOutboxService(OutBoxDataRepository outboxDataRepository , SubscriptionPublisher publisher){
         this.outboxDataRepository=outboxDataRepository;
         this.publisher = publisher;
     }
 
 
 
-    private static final Logger log = LoggerFactory.getLogger(OutboxDataService.class);
+    private static final Logger log = LoggerFactory.getLogger(KafkaEventOutboxService.class);
 
     @Scheduled(fixedDelay = 10000)
     public void PublishEvent(){
@@ -38,10 +38,10 @@ public class OutboxDataService {
 
 
 
-            List<OutboxData> data = outboxDataRepository.findByPublishedFalse();
+            List<KafkaOutboxData> data = outboxDataRepository.findByPublishedFalse();
 
 
-            for (OutboxData Outboxdata :data ){
+            for (KafkaOutboxData Outboxdata :data ){
                 SubscriptionActivationEvent event = outboxToEvent(Outboxdata);
 
                 try {
@@ -74,7 +74,7 @@ public class OutboxDataService {
 
 
 
-    private SubscriptionActivationEvent outboxToEvent(OutboxData data){
+    private SubscriptionActivationEvent outboxToEvent(KafkaOutboxData data){
         SubscriptionActivationEvent event = new SubscriptionActivationEvent(data.getUserName(),
                 data.getSubscriptionStatus(),data.getExpiresAt(),
                 data.getUniqueId(), data.getSubscriptionId());
