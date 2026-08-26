@@ -15,7 +15,8 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-public class OutboxData {
+@Table(name = "kafka_outbox_table")
+public class KafkaOutboxData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,4 +1,4 @@
-CREATE TABLE outbox_table(
+CREATE TABLE kafka_outbox_table(
 
 id BIGSERIAL PRIMARY KEY ,
 user_name VARCHAR(250) NOT NULL,
