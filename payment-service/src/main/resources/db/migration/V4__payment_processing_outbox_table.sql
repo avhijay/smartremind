@@ -10,7 +10,7 @@ currency VARCHAR(100) NOT NULL DEFAULT 'INR',
 payment_method VARCHAR (100) NOT NULL,
 payment_status VARCHAR (100) NOT NULL DEFAULT 'PENDING',
 retry_count BIGINT DEFAULT 0 ,
-
+subscription_plan_id BIGINT NOT NULL,
 idempotency_key VARCHAR(250) UNIQUE NOT NULL,
 
 
