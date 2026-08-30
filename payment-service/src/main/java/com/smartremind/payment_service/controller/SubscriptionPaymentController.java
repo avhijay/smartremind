@@ -53,9 +53,10 @@ public ResponseEntity<CurrentUserResponseDTO>getCurrentUser(@RequestHeader("X-Us
     }
 
 
-    @PostMapping("{idempotencyKey}")
+    // response with payment info has to be requested by client side polling
+    @PostMapping
     public ResponseEntity<PaymentCreationResponseDTO>requestPayment
-            (@Valid @RequestBody SubscriptionPurchaseRequestDTO subscriptionPurchaseRequestDTO , @RequestParam String idempotencyKey ){
+            (@Valid @RequestBody SubscriptionPurchaseRequestDTO subscriptionPurchaseRequestDTO , @RequestHeader("idempotency-Key") String idempotencyKey ){
 
        PaymentCreationResponseDTO payment = paymentCreationService.createPayment (subscriptionPurchaseRequestDTO , idempotencyKey);
 

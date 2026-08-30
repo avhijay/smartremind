@@ -7,9 +7,11 @@ import com.smartremind.payment_service.dto.provider.PaymentProviderResponseDTO;
 import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseRequestDTO;
 import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseResponseDTO;
 import com.smartremind.payment_service.entity.KafkaOutboxData;
+import com.smartremind.payment_service.entity.PaymentOutboxData;
 import com.smartremind.payment_service.entity.SubscriptionPayment;
 import com.smartremind.payment_service.entity.SubscriptionPlans;
 import com.smartremind.payment_service.enums.Currency;
+import com.smartremind.payment_service.enums.PaymentOutboxStatus;
 import com.smartremind.payment_service.enums.PaymentStatus;
 
 import com.smartremind.payment_service.enums.SubscriptionStatus;
@@ -20,6 +22,7 @@ import com.smartremind.payment_service.exception.SubscriptionPlanNotFoundExcepti
 import com.smartremind.payment_service.payment_provider.PaymentProvider;
 import com.smartremind.payment_service.producer.SubscriptionPublisher;
 import com.smartremind.payment_service.repository.OutBoxDataRepository;
+import com.smartremind.payment_service.repository.PaymentOutboxRepository;
 import com.smartremind.payment_service.repository.SubscriptionPaymentRepository;
 import com.smartremind.payment_service.repository.SubscriptionPlanRepository;
 
@@ -51,8 +54,9 @@ public class PaymentProcessingService {
 
     private final SubscriptionPaymentRepository subscriptionPaymentRepository;
     private final SubscriptionPlanRepository  subscriptionPlanRepository;
-    private final PaymentProvider paymentProvider;
+
     private final OutBoxDataRepository outBoxDataRepository;
+    private  final PaymentOutboxRepository paymentOutboxRepository;
 
     // assign region currency
 
@@ -62,18 +66,19 @@ public class PaymentProcessingService {
 
 
     public PaymentProcessingService(SubscriptionPaymentRepository subscriptionPaymentRepository , SubscriptionPlanRepository subscriptionPlanRepository ,
-                                    @Value("${payment.retry.max-attempt}")  int maxRetryAllowed , PaymentProvider paymentProvider ,
-                                    SubscriptionPublisher publisher , OutBoxDataRepository outBoxDataRepository
+                                    @Value("${payment.retry.max-attempt}")  int maxRetryAllowed  ,
+                                    SubscriptionPublisher publisher , OutBoxDataRepository outBoxDataRepository, PaymentOutboxRepository paymentOutboxRepository
 
     ){
 
         this.subscriptionPaymentRepository = subscriptionPaymentRepository;
         this.subscriptionPlanRepository = subscriptionPlanRepository;
         this.maxRetryAllowed = maxRetryAllowed;
-        this.paymentProvider = paymentProvider;
+
 
         this.publisher = publisher;
         this.outBoxDataRepository=outBoxDataRepository;
+        this.paymentOutboxRepository = paymentOutboxRepository;
 
 
     }
@@ -82,25 +87,20 @@ public class PaymentProcessingService {
 
 
 @Transactional
-public SubscriptionPurchaseResponseDTO processPayment (SubscriptionPayment payment) {
+public void  processPayment ( PaymentProviderResponseDTO  paymentResponse , PaymentOutboxData paymentOutboxData ) {
 
-        log.info("Request Process payment : Received  for payment : {}" , payment.getPaymentId());
-
-        PaymentProviderRequestDTO paymentRequest  = paymentToProviderRequestHelper(payment);
-
-        // sending request dto to payment provider
-    log.debug(" Payment Provider : Pending ");
-      PaymentProviderResponseDTO   paymentResponse =  paymentProvider.processCompletedPayment(paymentRequest);
-      log.info("Payment provider Response : Responded ");
+      log.debug("Getting Subscription Plan : {}" , paymentOutboxData.getSubscriptionId());
+    SubscriptionPlans plan = subscriptionPlanRepository.findById(paymentOutboxData.getSubscriptionId()).orElseThrow(()->
+            new SubscriptionPlanNotFoundException("Subscription plan not found with id : "+paymentOutboxData.getSubscriptionId()));
 
 
-      log.debug("Getting Subscription Plan : {}" , payment.getSubscriptionPlanId());
-    SubscriptionPlans plan = subscriptionPlanRepository.
-            findById(payment.getSubscriptionPlanId()).
-            orElseThrow(()->new SubscriptionPlanNotFoundException("Subscription plan not found with id : "+payment.getSubscriptionPlanId()));
+
+    // get Payment object
+    SubscriptionPayment payment = subscriptionPaymentRepository.findByIdempotencyKey(paymentOutboxData.getIdempotencyKey()).orElseThrow(()->
+            new PaymentDoesNotExistException("No Payment Exist for key : {}"+paymentOutboxData.getIdempotencyKey()));
 
 
-// change the fields for the payment
+
 
     //if success
     if (paymentResponse.status()==PaymentStatus.SUCCESS  && Objects.equals(payment.getPaymentId(), paymentResponse.paymentId())){
@@ -130,6 +130,11 @@ log.info("Payment Provider  : Payment Success");
         outBoxDataRepository.save(data);
 
 
+        // update process payment Outbox
+         paymentOutboxData.setPaymentOutboxStatus(PaymentOutboxStatus.SUCCESS);
+         paymentOutboxRepository.save(paymentOutboxData);
+
+
 
 
 
@@ -144,6 +149,8 @@ log.info("Payment Provider  : Payment Success");
 
         payment.setPaymentStatus(PaymentStatus.FAILED);
         payment.setProviderTransactionId(paymentResponse.providerTransactionId());
+        paymentOutboxData.setPaymentOutboxStatus(PaymentOutboxStatus.FAILED);
+        paymentOutboxRepository.save(paymentOutboxData);
 
         payment.setSubscriptionStatus(SubscriptionStatus.NOT_PURCHASED);
         payment.setPaymentStatus(PaymentStatus.FAILED);
@@ -161,8 +168,7 @@ log.info("Payment Provider  : Payment Success");
 
 
 
-    SubscriptionPurchaseResponseDTO responseDTO = subscriptionPaymentToResponseHelper(payment);
-    return responseDTO;
+
 
 
 }

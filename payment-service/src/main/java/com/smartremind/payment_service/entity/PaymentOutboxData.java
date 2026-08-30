@@ -56,7 +56,8 @@ public class PaymentOutboxData {
     private Integer currentRetryCount  = 0 ;
 
 
-
+@Column(name = "subscription_plan_id" , nullable = false)
+private Long subscriptionId;
 
     @Column(name = "idempotency_key" , nullable = false , length = 250)
     private String idempotencyKey;

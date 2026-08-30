@@ -16,20 +16,20 @@ import java.util.List;
 
 @Component
 @EnableScheduling
-public class KafkaEventOutboxService {
+public class KafkaEventWorker {
 
     private final OutBoxDataRepository outboxDataRepository;
 
     private final SubscriptionPublisher publisher;
 
-    public KafkaEventOutboxService(OutBoxDataRepository outboxDataRepository , SubscriptionPublisher publisher){
+    public KafkaEventWorker(OutBoxDataRepository outboxDataRepository , SubscriptionPublisher publisher){
         this.outboxDataRepository=outboxDataRepository;
         this.publisher = publisher;
     }
 
 
 
-    private static final Logger log = LoggerFactory.getLogger(KafkaEventOutboxService.class);
+    private static final Logger log = LoggerFactory.getLogger(KafkaEventWorker.class);
 
     @Scheduled(fixedDelay = 10000)
     public void PublishEvent(){

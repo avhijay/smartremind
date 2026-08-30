@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -55,6 +56,15 @@ public class PaymentCreationService {
 @Transactional
     public PaymentCreationResponseDTO createPayment(SubscriptionPurchaseRequestDTO request , String idempotencyKey){
 
+
+    // get the sub plan selected by the client
+
+    log.debug("Getting Subscription plan details  for the plan : {}", request.subscriptionPlan());
+
+    SubscriptionPlans plan = subscriptionPlanRepository.findById(request.subscriptionPlan())
+            .orElseThrow(()->new SubscriptionPlanNotFoundException("No subscription exist with the provided  id "));
+
+
         //check if plan already exist by the username
 
         log.info("Request create payment : Received  | Process payment : Pending  ");
@@ -69,9 +79,13 @@ public class PaymentCreationService {
 
 
 
+//get the subscriptionPaymentObject
+            SubscriptionPayment payment1 = subscriptionPaymentRepository.findByUsername(request.username()).orElseThrow(()->
+                    new IllegalArgumentException("User does not exist  : "+request.username()));
+
 
             // throw exception if payment exist for the username with a success payment
-            if (payment.getSubscriptionStatus() == SubscriptionStatus.ACTIVE ) {
+            if (payment.getSubscriptionStatus() == SubscriptionStatus.ACTIVE   && Objects.equals(payment1.getSubscriptionPlanId(), request.subscriptionPlan())) {
                 log.debug("Checking if Payment Subscription is active");
 
                 throw new SubscriptionAlreadyExistException("User cannot buy 2 quantity of the same subscription plan  ");
@@ -104,12 +118,7 @@ public class PaymentCreationService {
         }
         //create payment but don't process
 
-        // get the sub plan selected by the client
 
-        log.debug("Getting Subscription plan details  for the plan : {}", request.subscriptionPlan());
-
-        SubscriptionPlans plan = subscriptionPlanRepository.findById(request.subscriptionPlan())
-                .orElseThrow(()->new SubscriptionPlanNotFoundException("No subscription exist with the provided  id "));
 
         // generate payment id
         log.info("Generating PaymentId ");
@@ -178,6 +187,7 @@ public class PaymentCreationService {
                 .amount(subscriptionPayment.getAmount())
                 .idempotencyKey(subscriptionPayment.getIdempotencyKey())
                 .currency(subscriptionPayment.getCurrency())
+                .subscriptionId(subscriptionPayment.getSubscriptionPlanId())
                                                                                 .
 
                 build();
