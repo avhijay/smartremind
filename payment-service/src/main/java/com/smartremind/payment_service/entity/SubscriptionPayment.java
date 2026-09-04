@@ -71,6 +71,11 @@ public class SubscriptionPayment {
     @Column(name = "provider_transaction_id"  , length = 250)
     private String providerTransactionId;
 
+    @Column(name = "provider_order_id"  , length = 250)
+    private String providerOrderId;
+
+
+
     @Column(name = "idempotency_key" , nullable = false , length = 250)
     private String idempotencyKey;
 
