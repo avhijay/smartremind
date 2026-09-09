@@ -1,8 +1,7 @@
 package com.smartremind.payment_service.scheduler;
 
 
-import ch.qos.logback.core.util.FixedDelay;
-import com.smartremind.payment_service.dto.provider.PaymentProviderRequestDTO;
+import com.smartremind.payment_service.dto.provider.PaymentProviderRequestDto;
 import com.smartremind.payment_service.dto.provider.PaymentProviderResponseDTO;
 import com.smartremind.payment_service.entity.PaymentOutboxData;
 import com.smartremind.payment_service.enums.PaymentOutboxStatus;
@@ -14,20 +13,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
 
 @EnableScheduling
 @Component
-public class PaymentProcessWorker {
+public class ProviderOrderCreationWorker {
 
-    private static  final Logger log = LoggerFactory.getLogger(PaymentProcessWorker.class);
+    private static  final Logger log = LoggerFactory.getLogger(ProviderOrderCreationWorker.class);
 
     private final PaymentProcessingService paymentProcessingService;
     private final PaymentProvider paymentProvider;
     private final PaymentOutboxRepository paymentOutboxRepository;
 
-    public PaymentProcessWorker(PaymentProcessingService paymentProcessingService , PaymentProvider paymentProvider , PaymentOutboxRepository paymentOutboxRepository ){
+    public ProviderOrderCreationWorker(PaymentProcessingService paymentProcessingService , PaymentProvider paymentProvider , PaymentOutboxRepository paymentOutboxRepository ){
         this.paymentProcessingService= paymentProcessingService;
         this.paymentProvider = paymentProvider;
         this.paymentOutboxRepository = paymentOutboxRepository;
@@ -35,7 +33,7 @@ public class PaymentProcessWorker {
 
 
     @Scheduled(fixedDelay = 1000)
-    public void processPayment(){
+    public void processPayment() {
 
         List<PaymentOutboxData> payments = paymentOutboxRepository.findByPaymentOutboxStatus(PaymentOutboxStatus.PENDING);
 
@@ -43,9 +41,10 @@ public class PaymentProcessWorker {
 
             try {
 
-                PaymentProviderRequestDTO providerRequest = paymentToProviderRequest(payment);
-                PaymentProviderResponseDTO providerResponse = paymentProvider.processCompletedPayment(providerRequest);
-                paymentProcessingService.processPayment(providerResponse,payment);
+                PaymentProviderRequestDto providerRequest = paymentToProviderRequest(payment);
+
+
+         PaymentProviderResponseDTO providerResponse =  paymentProvider.createOrder(providerRequest);
 
 
 
@@ -64,9 +63,9 @@ log.info("Unable to Process Payment : {}", e.getMessage());
     }
 
 
-    private PaymentProviderRequestDTO paymentToProviderRequest(PaymentOutboxData data){
+    private PaymentProviderRequestDto paymentToProviderRequest(PaymentOutboxData data){
 
-        PaymentProviderRequestDTO requestDTO = new PaymentProviderRequestDTO(data.getPaymentId(), data.getAmount(),data.getPaymentMethod(),data.getCurrency());
+        PaymentProviderRequestDto requestDTO = new PaymentProviderRequestDto(data.getPaymentId(), data.getAmount(),data.getCurrency());
 
         return requestDTO;
 

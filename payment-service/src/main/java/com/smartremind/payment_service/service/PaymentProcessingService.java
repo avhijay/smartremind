@@ -1,25 +1,20 @@
 package com.smartremind.payment_service.service;
 
 
-import com.smartremind.payment_service.dto.provider.PaymentProviderRequestDTO;
+import com.smartremind.payment_service.dto.provider.PaymentProviderRequestDto;
 
 import com.smartremind.payment_service.dto.provider.PaymentProviderResponseDTO;
-import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseRequestDTO;
 import com.smartremind.payment_service.dto.purchase.SubscriptionPurchaseResponseDTO;
 import com.smartremind.payment_service.entity.KafkaOutboxData;
 import com.smartremind.payment_service.entity.PaymentOutboxData;
 import com.smartremind.payment_service.entity.SubscriptionPayment;
 import com.smartremind.payment_service.entity.SubscriptionPlans;
-import com.smartremind.payment_service.enums.Currency;
 import com.smartremind.payment_service.enums.PaymentOutboxStatus;
 import com.smartremind.payment_service.enums.PaymentStatus;
 
 import com.smartremind.payment_service.enums.SubscriptionStatus;
-import com.smartremind.payment_service.exception.DuplicatePaymentException;
 import com.smartremind.payment_service.exception.PaymentDoesNotExistException;
-import com.smartremind.payment_service.exception.SubscriptionAlreadyExistException;
 import com.smartremind.payment_service.exception.SubscriptionPlanNotFoundException;
-import com.smartremind.payment_service.payment_provider.PaymentProvider;
 import com.smartremind.payment_service.producer.SubscriptionPublisher;
 import com.smartremind.payment_service.repository.OutBoxDataRepository;
 import com.smartremind.payment_service.repository.PaymentOutboxRepository;
@@ -199,14 +194,14 @@ log.info("Payment Provider  : Payment Success");
     }
 
 
-private PaymentProviderRequestDTO paymentToProviderRequestHelper(SubscriptionPayment payment ){
+private PaymentProviderRequestDto paymentToProviderRequestHelper(SubscriptionPayment payment ){
 
         //Get the payment amount
     SubscriptionPlans plan  = subscriptionPlanRepository.findById(payment.getSubscriptionPlanId())
             .orElseThrow(()->new SubscriptionPlanNotFoundException("No subscription exist by the id "+payment.getSubscriptionPlanId()));
 
 
-    return new PaymentProviderRequestDTO(payment.getPaymentId(),plan.getAmount(),payment.getPaymentMethod(),payment.getCurrency());
+    return new PaymentProviderRequestDto(payment.getPaymentId(),plan.getAmount(),payment.getCurrency());
 
 
 
