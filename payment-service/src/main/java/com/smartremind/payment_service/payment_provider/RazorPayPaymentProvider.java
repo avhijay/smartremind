@@ -5,17 +5,49 @@ import com.smartremind.payment_service.dto.provider.PaymentProviderResponseDTO;
 import com.smartremind.payment_service.dto.razorpay.RazorPayRequestDto;
 import com.smartremind.payment_service.dto.razorpay.RazorPayResponseDto;
 import com.smartremind.payment_service.enums.PaymentStatus;
+import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 public  class RazorPayPaymentProvider implements PaymentProvider{
 
+    private final RestClient razorPayrestClient;
+
+    public RazorPayPaymentProvider (RestClient restClient){
+        this.razorPayrestClient = restClient;
+
+    }
+
 
     @Override
     public PaymentProviderResponseDTO createOrder(PaymentProviderRequestDto paymentProviderRequestDto) {
-        return null;
+
+
+        RazorPayRequestDto razorPayRequest = mapToRazorPayRequest(paymentProviderRequestDto);
+
+
+RazorPayResponseDto razorPayResponse = razorPayrestClient.post()
+        .uri("v1/orders")
+        .body(razorPayRequest)
+        .retrieve()
+        .body(RazorPayResponseDto.class);
+
+        assert razorPayResponse != null;
+        PaymentProviderResponseDTO responseDTO = mapToPaymentProviderResponse(razorPayResponse);
+
+
+
+
     }
+
+
+
+
+
+
+
+
 
 
 
