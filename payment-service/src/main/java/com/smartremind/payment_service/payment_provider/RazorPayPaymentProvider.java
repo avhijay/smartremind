@@ -4,37 +4,64 @@ import com.smartremind.payment_service.dto.provider.PaymentProviderRequestDto;
 import com.smartremind.payment_service.dto.provider.PaymentProviderResponseDTO;
 import com.smartremind.payment_service.dto.razorpay.RazorPayRequestDto;
 import com.smartremind.payment_service.dto.razorpay.RazorPayResponseDto;
+import com.smartremind.payment_service.entity.PaymentOutboxData;
+import com.smartremind.payment_service.entity.SubscriptionPayment;
+import com.smartremind.payment_service.enums.PaymentOutboxStatus;
 import com.smartremind.payment_service.enums.PaymentStatus;
+import com.smartremind.payment_service.exception.PaymentDoesNotExistException;
+import com.smartremind.payment_service.exception.PaymentProviderException;
+import com.smartremind.payment_service.repository.PaymentOutboxRepository;
+import com.smartremind.payment_service.repository.SubscriptionPaymentRepository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.UUID;
 
 public  class RazorPayPaymentProvider implements PaymentProvider{
 
     private final RestClient razorPayrestClient;
+    private final SubscriptionPaymentRepository subscriptionPaymentRepository ;
+    private final PaymentOutboxRepository paymentOutboxRepository;
 
-    public RazorPayPaymentProvider (RestClient restClient){
+
+    public RazorPayPaymentProvider (RestClient restClient , SubscriptionPaymentRepository subscriptionPaymentRepository , PaymentOutboxRepository paymentOutboxRepository){
         this.razorPayrestClient = restClient;
+        this.subscriptionPaymentRepository = subscriptionPaymentRepository;
+        this.paymentOutboxRepository = paymentOutboxRepository;
 
     }
 
 
     @Override
+    @Transactional
     public PaymentProviderResponseDTO createOrder(PaymentProviderRequestDto paymentProviderRequestDto) {
 
 
         RazorPayRequestDto razorPayRequest = mapToRazorPayRequest(paymentProviderRequestDto);
 
 
-RazorPayResponseDto razorPayResponse = razorPayrestClient.post()
-        .uri("v1/orders")
-        .body(razorPayRequest)
-        .retrieve()
-        .body(RazorPayResponseDto.class);
+        try {
 
-        assert razorPayResponse != null;
-        PaymentProviderResponseDTO responseDTO = mapToPaymentProviderResponse(razorPayResponse);
+            RazorPayResponseDto razorPayResponse = razorPayrestClient.post()
+                    .uri("/v1/orders")
+                    .body(razorPayRequest)
+                    .retrieve()
+                    .body(RazorPayResponseDto.class);
+
+            assert razorPayResponse != null;
+            PaymentProviderResponseDTO responseDTO = mapToPaymentProviderResponse(razorPayResponse);
+            return responseDTO;
+
+        } catch (Exception e) {
+            throw  new PaymentProviderException("Exception occurred while creating order in Razor pay"+e.getMessage());
+        }
+
+
+
+
+
 
 
 

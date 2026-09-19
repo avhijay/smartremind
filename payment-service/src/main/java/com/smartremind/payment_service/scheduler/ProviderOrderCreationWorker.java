@@ -7,6 +7,8 @@ import com.smartremind.payment_service.entity.PaymentOutboxData;
 import com.smartremind.payment_service.enums.PaymentOutboxStatus;
 import com.smartremind.payment_service.payment_provider.PaymentProvider;
 import com.smartremind.payment_service.repository.PaymentOutboxRepository;
+import com.smartremind.payment_service.service.PaymentCreationService;
+import com.smartremind.payment_service.service.PaymentOrderCreationService;
 import com.smartremind.payment_service.service.PaymentProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +23,17 @@ public class ProviderOrderCreationWorker {
 
     private static  final Logger log = LoggerFactory.getLogger(ProviderOrderCreationWorker.class);
 
-    private final PaymentProcessingService paymentProcessingService;
+
     private final PaymentProvider paymentProvider;
     private final PaymentOutboxRepository paymentOutboxRepository;
+    private final PaymentOrderCreationService paymentOrderCreationService ;
 
-    public ProviderOrderCreationWorker(PaymentProcessingService paymentProcessingService , PaymentProvider paymentProvider , PaymentOutboxRepository paymentOutboxRepository ){
-        this.paymentProcessingService= paymentProcessingService;
+    public ProviderOrderCreationWorker( PaymentProvider paymentProvider ,
+                                       PaymentOutboxRepository paymentOutboxRepository  , PaymentOrderCreationService paymentOrderCreationService){
+
         this.paymentProvider = paymentProvider;
         this.paymentOutboxRepository = paymentOutboxRepository;
+        this.paymentOrderCreationService = paymentOrderCreationService;
     }
 
 
@@ -46,7 +51,9 @@ public class ProviderOrderCreationWorker {
 
          PaymentProviderResponseDTO providerResponse =  paymentProvider.createOrder(providerRequest);
 
+         // send the response  to orderCreation /  payment update
 
+paymentOrderCreationService.orderCreation(providerResponse);
 
             }catch (Exception e ){
 
