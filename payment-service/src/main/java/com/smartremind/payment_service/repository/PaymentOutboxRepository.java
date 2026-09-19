@@ -11,5 +11,6 @@ public interface PaymentOutboxRepository extends JpaRepository<PaymentOutboxData
 
 List<PaymentOutboxData>findByPaymentOutboxStatus(PaymentOutboxStatus status);
 Optional<PaymentOutboxData>findByIdempotencyKey(String idempotencyKey);
+Optional<PaymentOutboxData>findByPaymentId(String paymentId);
 
 }
