@@ -12,6 +12,8 @@ import com.smartremind.payment_service.exception.PaymentDoesNotExistException;
 import com.smartremind.payment_service.exception.PaymentProviderException;
 import com.smartremind.payment_service.repository.PaymentOutboxRepository;
 import com.smartremind.payment_service.repository.SubscriptionPaymentRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
@@ -24,6 +26,7 @@ public  class RazorPayPaymentProvider implements PaymentProvider{
     private final RestClient razorPayrestClient;
     private final SubscriptionPaymentRepository subscriptionPaymentRepository ;
     private final PaymentOutboxRepository paymentOutboxRepository;
+    private  final Logger log = LoggerFactory.getLogger(RazorPayPaymentProvider.class);
 
 
     public RazorPayPaymentProvider (RestClient restClient , SubscriptionPaymentRepository subscriptionPaymentRepository , PaymentOutboxRepository paymentOutboxRepository){
@@ -38,12 +41,15 @@ public  class RazorPayPaymentProvider implements PaymentProvider{
     @Transactional
     public PaymentProviderResponseDTO createOrder(PaymentProviderRequestDto paymentProviderRequestDto) {
 
+        log.info("Request : Provider order creation request | received ");
+
 
         RazorPayRequestDto razorPayRequest = mapToRazorPayRequest(paymentProviderRequestDto);
 
 
         try {
 
+            log.info("Request : Provider order creation request | Sending to Razor pay : {} " , razorPayRequest.receipt());
             RazorPayResponseDto razorPayResponse = razorPayrestClient.post()
                     .uri("/v1/orders")
                     .body(razorPayRequest)
@@ -51,10 +57,12 @@ public  class RazorPayPaymentProvider implements PaymentProvider{
                     .body(RazorPayResponseDto.class);
 
             assert razorPayResponse != null;
+            log.info("Request : Provider order creation request | Success");
             PaymentProviderResponseDTO responseDTO = mapToPaymentProviderResponse(razorPayResponse);
             return responseDTO;
 
         } catch (Exception e) {
+            log.info("Request : Provider order creation request | Failed  : {}", e.getMessage());
             throw  new PaymentProviderException("Exception occurred while creating order in Razor pay"+e.getMessage());
         }
 
