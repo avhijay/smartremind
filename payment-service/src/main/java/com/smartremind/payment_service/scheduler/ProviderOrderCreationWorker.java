@@ -40,6 +40,8 @@ public class ProviderOrderCreationWorker {
     @Scheduled(fixedDelay = 1000)
     public void processPayment() {
 
+        log.info(" Process Payment Worker : Fetching payments with Status : Pending ");
+
         List<PaymentOutboxData> payments = paymentOutboxRepository.findByPaymentOutboxStatus(PaymentOutboxStatus.PENDING);
 
         for (PaymentOutboxData  payment : payments){
@@ -49,10 +51,14 @@ public class ProviderOrderCreationWorker {
                 PaymentProviderRequestDto providerRequest = paymentToProviderRequest(payment);
 
 
+                log.info("Sending payment info to Payment Provider Service : {} " , providerRequest.paymentId());
+
          PaymentProviderResponseDTO providerResponse =  paymentProvider.createOrder(providerRequest);
 
+         log.info("Payment Provider Service Response : Received ");
          // send the response  to orderCreation /  payment update
 
+                log.info("Order creation Request sent to OrderCreation Service : {}" , providerResponse.paymentId());
 paymentOrderCreationService.orderCreation(providerResponse);
 
             }catch (Exception e ){
