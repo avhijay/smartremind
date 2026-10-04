@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route ,Link } from 'react-router-dom'
-
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import PlanCard from './components/PlanCard'
 
 
 function PaymentHome() {
@@ -15,9 +16,52 @@ function PaymentHome() {
 }
 
 
+
+
+
 function PlansPage() {
-  return <h1>Plans Page</h1>
+  
+
+const [plans, setPlans] = useState([
+
+
+
+  
+  {
+    id: 1,
+    subscriptionPlan: 'MONTHLY',
+    amount: 499,
+    planDurationDays: 30,
+    planIsActive: true,
+  },
+  {
+    id: 2,
+    subscriptionPlan: 'YEARLY',
+    amount: 4999,
+    planDurationDays: 365,
+    planIsActive: true,
+  },
+])
+
+useEffect(() => {
+  console.log('PlansPage loaded')
+}, [])
+
+  return (
+    <div>
+      <h1>Subscription Plans</h1>
+
+      {plans.map((plan) => (
+  <PlanCard key={plan.id} plan={plan} />
+))}
+
+
+    </div>
+  )
 }
+
+
+
 
 function MyPlanPage() {
   return <h1>My Plan Page</h1>
