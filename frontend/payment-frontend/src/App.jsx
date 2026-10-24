@@ -19,6 +19,7 @@ function PlansPage() {
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selectedPlan, setSelectedPlan] = useState(null)
 
   useEffect(() => {
     fetch('http://localhost:8080/subscription/active/plans')
@@ -41,6 +42,10 @@ function PlansPage() {
       })
   }, [])
 
+  function handlePlanSelection(plan) {
+    setSelectedPlan(plan)
+  }
+
   return (
     <div>
       <h1>Subscription Plans</h1>
@@ -54,8 +59,26 @@ function PlansPage() {
       )}
 
       {!loading && !error && plans.map((plan) => (
-        <PlanCard key={plan.id} plan={plan} />
+        <PlanCard
+          key={plan.id}
+          plan={plan}
+          onChoosePlan={handlePlanSelection}
+        />
       ))}
+
+      {selectedPlan && (
+        <div>
+          <h2>Selected Plan</h2>
+
+          <p>Plan: {selectedPlan.subscriptionPlan}</p>
+          <p>Amount: ₹{selectedPlan.amount}</p>
+          <p>Duration: {selectedPlan.planDurationDays} days</p>
+
+          <button onClick={() => setSelectedPlan(null)}>
+            Change Selection
+          </button>
+        </div>
+      )}
     </div>
   )
 }
